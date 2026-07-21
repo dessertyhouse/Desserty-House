@@ -1,3 +1,4 @@
+import {media} from './media';
 export type Style={code:string;title:string;description:string;image:string};
 export type Product={id:string;slug:string;name:string;short:string;description:string;details:string[];gallery:Style[]};
 const names:Record<string,string[]>= {
@@ -9,7 +10,7 @@ const names:Record<string,string[]>= {
  donuts:['Chocolate Glaze','Strawberry Glaze','Cinnamon Sugar','Party Box','Dark Chocolate','Pistachio Glaze','Strawberry Sprinkle','Lotus Topping','Vanilla Sprinkle','Mini Donut Box'],
  birthday:['Chocolate Drip','White Floral','Pastel Birthday','Kids Celebration','Black Forest','Buttercream Bloom','Blue Minimal','Rainbow Party','Red Velvet','Golden Anniversary']
 };
-const styles=(slug:string,prefix:string)=>names[slug].map((title,i)=>({code:`${prefix}-${String(i+1).padStart(2,'0')}`,title,description:`${title} style — customise the flavour, egg preference and celebration details when you order.`,image:`/collections/${slug}/${slug}-${i+1}.jpg`}));
+const styles=(slug:string,prefix:string)=>names[slug].map((title,i)=>({code:`${prefix}-${String(i+1).padStart(2,'0')}`,title,description:`${title} style — customise the flavour, egg preference and celebration details when you order.`,image:media(`/collections/${slug}/${slug}-${i+1}.jpg`)}));
 export const products:Product[]=[
  {id:'BRW-001',slug:'brownies',name:'Brownies',short:'Rich, fresh brownies made for sharing and gifting.',description:'Dessert(y) House brownies are baked to order for a deeply chocolatey, indulgent bite. Choose a style code below, your preferred quantity and egg or eggless option.',details:['Ten style references to choose from','Single portions, sharing boxes and gifting quantities','Egg or eggless option on request'],gallery:styles('brownies','BRW')},
  {id:'BEN-001',slug:'bento-cakes',name:'Bento Cakes',short:'Small celebration cakes with a big personal touch.',description:'Our bento cakes are made for intimate birthdays, date nights, surprises and little wins. Choose a style code and share your message, colour palette or inspiration.',details:['Ten personal-sized cake style references','Custom messages, colours and simple designs','Egg or eggless option on request'],gallery:styles('bento','BEN')},

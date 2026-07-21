@@ -1,4 +1,4 @@
-'use client';import {useMemo,useState} from 'react';
+'use client';import {useMemo,useState} from 'react';import PostManager from './PostManager';
 type Order={id:string;order_id:string;customer_name:string;phone:string;product_id:string;event_date:string;quantity:string;area:string;status:string;payment_status:string;scheduled_at?:string;admin_notes?:string;customer_message?:string;source?:string;notes?:string};
 const statuses=['Request received','Awaiting customer reply','Quote sent','Awaiting advance','Confirmed','In production','Ready','Out for delivery','Completed','Cancelled'];
 const products=['BRW-001','BEN-001','FON-001','BOM-001','CUP-001','DON-001','BDY-001'];

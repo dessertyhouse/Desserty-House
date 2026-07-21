@@ -15,3 +15,17 @@ alter table public.orders add column if not exists style_code text;
 -- Content-management design for the next CMS step:
 create table if not exists public.product_styles (id uuid primary key default gen_random_uuid(), product_id text not null, style_code text unique not null, title text not null, description text, image_url text not null, instagram_url text, is_active boolean default true, sort_order int default 0, created_at timestamptz default now());
 create table if not exists public.offers (id uuid primary key default gen_random_uuid(), title text not null, description text, image_url text, offer_code text unique, cta_label text default 'Order on WhatsApp', starts_at timestamptz, ends_at timestamptz, is_published boolean default false, created_at timestamptz default now());
+
+-- Admin-managed offers, launches and announcements. Deleting a post through the dashboard
+-- also deletes its linked Cloudinary asset using the secure server API.
+create table if not exists public.posts (
+ id uuid primary key default gen_random_uuid(),
+ title text not null,
+ description text,
+ kind text not null default 'offer',
+ cloudinary_public_id text not null,
+ image_url text not null,
+ is_published boolean default true,
+ created_at timestamptz default now()
+);
+alter table public.posts enable row level security;

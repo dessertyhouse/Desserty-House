@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Dessert(y) House — website and order workflow
 
 A clean replacement for the old unrelated repository. It provides a public menu with fixed product IDs, an order-request form, WhatsApp hand-off, customer order lookup, and a one-owner order/follow-up dashboard.
@@ -67,7 +66,24 @@ This is the only active Dessert(y) House project. Marketing collateral and publi
 - `public/` — website images.
 - `app/` — Next.js website, customer order flow and owner dashboard.
 - `supabase-schema.sql` — database setup.
-=======
-# Desserty-House
-Our selling website
->>>>>>> b834384573fbf5b02bb43cb665961d9c0a109229
+
+## Cloudinary image delivery
+
+The optimised image package has been uploaded to a Cloudinary folder named `Desserty House`, with `selection`, `previous-orders` and `site` folders visible. Set these Vercel environment variables before deployment:
+
+```env
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=pjn0251d
+NEXT_PUBLIC_CLOUDINARY_ROOT_FOLDER=Desserty House
+```
+
+The site then uses Cloudinary transformations (`f_auto,q_auto,w_auto,dpr_auto`) for all selection and previous-order images. The code retains a local-image fallback until these variables are provided. If a Cloudinary asset’s **Public ID** differs from its visible folder/file path, send one asset’s delivery URL; update the root/public-ID mapping before deployment.
+
+## Admin uploads and deleting future posts
+
+`/posts` is the public page for offer and upcoming-product posts. The admin API at `/api/admin/posts` is prepared to upload an image directly into Cloudinary folder `Desserty House/upcoming-posts`, store its title/description in `posts`, and publish it on the website.
+
+To activate it add these **server-only** Vercel variables: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`. The admin dashboard must then expose the upload form (next dashboard update). When an admin deletes a post, the API first deletes the Cloudinary asset by its exact Public ID and then deletes its database record, so it disappears from both Cloudinary and the public `/posts` page.
+
+## Final Cloudinary-only media mode
+
+The repository no longer contains the heavy product/showcase images. All customer-facing images resolve through `/api/media`, which securely looks up the matching Cloudinary asset by its **asset folder** and **original filename**, then redirects the browser to an optimised Cloudinary delivery URL. This is necessary because Cloudinary assigned unique suffixes such as `dh-showcase-46_ehsejs` to Public IDs. It requires the three private `CLOUDINARY_*` deployment variables. Do not remove the `Desserty House/selection`, `Desserty House/previous-orders`, or `Desserty House/site` asset folders in Cloudinary.
