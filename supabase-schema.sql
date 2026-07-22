@@ -29,3 +29,11 @@ create table if not exists public.posts (
  created_at timestamptz default now()
 );
 alter table public.posts enable row level security;
+
+-- Admin post management: run once for unique owner follow-up codes.
+alter table public.posts add column if not exists post_code text unique;
+create table if not exists public.workers (
+ id uuid primary key default gen_random_uuid(), full_name text not null, role text not null,
+ phone text, status text not null default 'Active', notes text, created_at timestamptz default now()
+);
+alter table public.workers enable row level security;
