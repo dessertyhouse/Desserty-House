@@ -24,7 +24,7 @@ create table if not exists public.customers (
 );
 alter table public.customers enable row level security;
 
-alter table public.orders add constraint orders_customer_id_fkey foreign key (customer_id) references public.customers(id) on delete set null;
+do $$ begin alter table public.orders add constraint orders_customer_id_fkey foreign key (customer_id) references public.customers(id) on delete set null; exception when duplicate_object then null; end $$;
 
 create table if not exists public.order_history (
  id uuid primary key default gen_random_uuid(),

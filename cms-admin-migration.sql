@@ -2,8 +2,8 @@
 -- Run this in Supabase SQL Editor only after backing up existing tables.
 -- This is the data foundation for draft → review → publish content management.
 
-create type public.staff_role as enum ('owner','baker','content_manager');
-create type public.publish_state as enum ('draft','published','archived');
+do $$ begin create type public.staff_role as enum ('owner','baker','content_manager'); exception when duplicate_object then null; end $$;
+do $$ begin create type public.publish_state as enum ('draft','published','archived'); exception when duplicate_object then null; end $$;
 
 create table if not exists public.staff_profiles (
   id uuid primary key references auth.users(id) on delete cascade,
@@ -93,6 +93,9 @@ alter table public.content_revisions enable row level security;
 
 -- Public customers can see only published/active items. Admin role policies are added
 -- with Supabase Auth in the CMS implementation; do not add broad anonymous write policies.
+drop policy if exists "public sees published products" on public.catalog_products;
 create policy "public sees published products" on public.catalog_products for select using (state='published' and is_active=true);
+drop policy if exists "public sees published styles" on public.catalog_styles;
 create policy "public sees published styles" on public.catalog_styles for select using (state='published' and is_active=true);
+drop policy if exists "public sees published showcase" on public.showcase_items;
 create policy "public sees published showcase" on public.showcase_items for select using (state='published' and is_visible=true);
