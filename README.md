@@ -1,4 +1,20 @@
-# Dessert(y) House — website and order workflow
+# Dessert(y) House — website, order workflow & full SEO/GEO stack
+
+> **July 2026 upgrade:** this codebase now includes complete SEO, GEO
+> (Generative Engine Optimization) and AI-discovery support:
+> auto-generated `robots.txt`, `sitemap.xml` (with image extensions),
+> `llms.txt`, `llms-full.txt`, `manifest.json` (PWA), `rss.xml`,
+> full Schema.org JSON-LD (Bakery, LocalBusiness, Organization, WebSite,
+> SearchAction, BreadcrumbList, FAQPage, Product/Offer, Review/AggregateRating,
+> ImageObject, ItemList, Service), Open Graph/Twitter/canonical metadata on
+> every page, breadcrumbs, semantic HTML, security headers and new pages
+> (About, Products hub, Custom Cakes, Wedding Cakes, FAQ, Testimonials,
+> Contact, Terms, Shipping & Refund policies).
+>
+> 📘 **Start here:** [`docs/PUBLISHING-GUIDE.md`](docs/PUBLISHING-GUIDE.md) (beginner publishing walkthrough)
+> · [`docs/FILE-REFERENCE.md`](docs/FILE-REFERENCE.md) (what every file does)
+> · ⭐ Edit [`src/lib/site.ts`](src/lib/site.ts) first — it feeds every page, schema and txt file.
+> · Set `NEXT_PUBLIC_SITE_URL` to your live domain in Vercel.
 
 A clean replacement for the old unrelated repository. It provides a public menu with fixed product IDs, an order-request form, WhatsApp hand-off, customer order lookup, and a one-owner order/follow-up dashboard.
 

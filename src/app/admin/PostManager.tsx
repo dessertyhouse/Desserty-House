@@ -195,6 +195,7 @@ export default function PostManager() {
                   <option value="new launch">New Launch</option>
                   <option value="announcement">Announcement</option>
                   <option value="seasonal">Seasonal</option>
+                  <option value="feedback">Customer Feedback (shows on /feedback page)</option>
                 </select>
               </label>
             </div>
