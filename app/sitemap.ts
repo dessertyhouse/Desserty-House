@@ -1,2 +1,0 @@
-import type {MetadataRoute} from 'next';import {products} from './products';
-export default function sitemap():MetadataRoute.Sitemap{const base='https://desserty-house.vercel.app';return [{url:base,lastModified:new Date(),changeFrequency:'weekly',priority:1},{url:`${base}/showcase`,lastModified:new Date(),changeFrequency:'weekly',priority:.9},{url:`${base}/posts`,lastModified:new Date(),changeFrequency:'weekly',priority:.8},...products.map(p=>({url:`${base}/menu/${p.slug}`,lastModified:new Date(),changeFrequency:'weekly' as const,priority:.8}))]}
