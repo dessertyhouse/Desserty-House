@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import JsonLd from '@/components/JsonLd';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { site, abs } from '@/lib/site';
+import { getSettings, waLink, waOrderLink } from '@/lib/settings';
 
 export const metadata: Metadata = {
   title: 'Contact Us — Order on WhatsApp or Visit Us in Chennai',
@@ -13,7 +14,10 @@ export const metadata: Metadata = {
 };
 
 /** Contact page with ContactPage JSON-LD, NAP details, business hours and an embedded map. */
-export default function Contact() {
+export const revalidate = 60;
+
+export default async function Contact() {
+  const settings = await getSettings();
   const contactSchema = {
     '@type': 'ContactPage',
     '@id': abs('/contact#webpage'),
@@ -33,10 +37,10 @@ export default function Contact() {
           <div>
             <h2>Reach us</h2>
             <address>
-              <p><strong>WhatsApp / Phone:</strong> <a href={`tel:${site.phone}`}>{site.phoneDisplay}</a></p>
-              <p><strong>WhatsApp direct:</strong> <a href={site.whatsappOrder} rel="noopener">Message us to order</a></p>
-              <p><strong>Email:</strong> <a href={`mailto:${site.email}`}>{site.email}</a></p>
-              <p><strong>Instagram:</strong> <a href={site.instagram} rel="noopener">@dessertyhouse</a></p>
+              <p><strong>WhatsApp / Phone:</strong> <a href={`tel:+${settings.phoneDigits}`}>{settings.phoneDisplay}</a></p>
+              <p><strong>WhatsApp direct:</strong> <a href={waOrderLink(settings)} rel="noopener">Message us to order</a></p>
+              <p><strong>Email:</strong> <a href={`mailto:${settings.email}`}>{settings.email}</a></p>
+              <p><strong>Instagram:</strong> <a href={settings.instagram} rel="noopener">@dessertyhouse</a></p>
               <p>
                 <strong>Location:</strong> {site.address.locality}, {site.address.region}, India
                 {site.address.streetAddress ? ` — ${site.address.streetAddress}` : ''}
@@ -44,17 +48,10 @@ export default function Contact() {
             </address>
 
             <h2>Business hours</h2>
-            <ul>
-              {site.openingHours.map((h) => (
-                <li key={h.days.join()}>
-                  {h.days.length > 1 ? `${h.days[0]}–${h.days[h.days.length - 1]}` : h.days[0]}:{' '}
-                  {h.opens}–{h.closes}
-                </li>
-              ))}
-            </ul>
+            <p>{settings.hoursText}</p>
 
             <h2>Delivery areas</h2>
-            <p>{site.areaServed.join(' · ')} — full details on the <Link href="/shipping-policy">delivery policy</Link> page.</p>
+            <p>{settings.deliveryAreas.join(' · ')} — full details on the <Link href="/shipping-policy">delivery policy</Link> page.</p>
             <Link className="btn gold" href="/order">Start an order</Link>
           </div>
           <div>

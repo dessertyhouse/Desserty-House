@@ -4,6 +4,7 @@ import JsonLd from '@/components/JsonLd';
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { products } from '@/app/products';
 import { site, abs } from '@/lib/site';
+import { getSettings } from '@/lib/settings';
 
 export const metadata: Metadata = {
   title: 'Products — Cakes, Brownies, Cupcakes, Donuts & More',
@@ -14,12 +15,16 @@ export const metadata: Metadata = {
 };
 
 /** Product hub page with ItemList schema listing every product category. */
-export default function Products() {
+export const revalidate = 60;
+
+export default async function Products() {
+  const settings = await getSettings();
+  const visibleProducts = products.filter((p) => !settings.hiddenProducts.includes(p.id));
   const itemList = {
     '@type': 'ItemList',
     name: `${site.name} product menu`,
-    numberOfItems: products.length,
-    itemListElement: products.map((p, i) => ({
+    numberOfItems: visibleProducts.length,
+    itemListElement: visibleProducts.map((p, i) => ({
       '@type': 'ListItem',
       position: i + 1,
       name: p.name,
@@ -38,7 +43,7 @@ export default function Products() {
           Choose a category to see ten style references, then place your order online or on WhatsApp.
         </p>
         <div className="grid">
-          {products.map((p) => (
+          {visibleProducts.map((p) => (
             <article className="card" key={p.id}>
               <img
                 src={p.gallery[0].image}

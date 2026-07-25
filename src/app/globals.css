@@ -1233,3 +1233,88 @@ body{background:#fff9f0;color:#28120e}.nav{gap:20px;border-bottom:1px solid #ead
 .feedback-card figcaption p{color:#6c554b;line-height:1.5;margin:6px 0 0;font-size:14px}
 @media(max-width:820px){.feedback-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){.feedback-grid{grid-template-columns:1fr}}
+
+/* ===== Admin: post editing & order danger zone ===== */
+.post-edit-form{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.post-edit-form input,.post-edit-form textarea,.post-edit-form select{width:100%;padding:9px;border:1px solid #cdb9a7;border-radius:7px;background:#fffdf9;font:inherit;font-size:14px}
+.danger-zone{margin-top:22px;padding:14px 16px;border:1px dashed #d9908a;border-radius:10px;background:#fdf3f2}
+
+/* ===== Mobile UX upgrade: hamburger menu, floating WhatsApp, touch targets ===== */
+.mobile-menu{display:none;position:relative;margin-left:auto}
+.mobile-menu summary{list-style:none;cursor:pointer;border:1px solid #d9b478;color:#56301e;border-radius:22px;padding:10px 16px;font-size:14px;font-weight:800;white-space:nowrap;user-select:none;display:inline-flex;align-items:center;gap:7px}
+.mobile-menu summary::-webkit-details-marker{display:none}
+.mobile-menu[open] summary{background:#f2e4d1}
+.mobile-menu-icon{font-size:16px;line-height:1}
+.mobile-menu-panel{position:absolute;right:0;top:calc(100% + 10px);z-index:60;min-width:230px;background:#fffdf8;border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px #41201426;padding:10px;display:flex;flex-direction:column}
+.mobile-menu-panel a{padding:12px 14px;border-radius:9px;font-weight:700;color:#56301e;font-size:15px}
+.mobile-menu-panel a:active,.mobile-menu-panel a:hover{background:#f2e4d1}
+.mobile-menu-cta{background:var(--gold);color:var(--ink)!important;text-align:center;margin-top:6px}
+.mobile-menu-wa{color:#1f7a43!important;border-top:1px solid var(--line);margin-top:6px;padding-top:14px!important;font-size:14px!important}
+.wa-float{position:fixed;right:16px;bottom:16px;z-index:70;display:inline-flex;align-items:center;gap:9px;background:#25d366;color:#fff;font-weight:800;font-size:14px;padding:12px 18px;border-radius:30px;box-shadow:0 10px 26px #1a683a55}
+.wa-float:active{transform:scale(.97)}
+@media(min-width:1001px){.wa-float span{display:inline}}
+@media(max-width:1000px){
+  .nav .links{display:none}
+  .nav-order{display:none}
+  .mobile-menu{display:block}
+}
+@media(max-width:700px){
+  .mobile-menu{display:block!important}
+  .wa-float{padding:13px;border-radius:50%}
+  .wa-float span{display:none} /* icon-only on small screens to save space */
+  /* comfortable tap targets & spacing */
+  .btn{padding:14px 20px;min-height:44px}
+  .text-link,.card-links a{display:inline-block;padding:6px 0}
+  .breadcrumbs{font-size:12px;padding-top:12px}
+  .breadcrumbs ol{gap:4px}
+  .site-footer .footer-grid{gap:20px;padding-top:36px}
+  .site-footer nav a{padding:6px 0}
+  .faq-item summary{padding:16px 0}
+  .faq-item summary h2{font-size:16px;line-height:1.35}
+  .contact-grid iframe{height:280px}
+  .section h1{font-size:clamp(30px,8.5vw,40px)}
+  .product-intro,.lead{font-size:16px}
+  .photo-grid{grid-template-columns:1fr}
+  .how-grid b{width:30px;height:30px}
+  /* keep content clear of the floating button */
+  .site-footer .footer-bottom{padding-bottom:84px}
+}
+/* ===== Admin mobile improvements ===== */
+@media(max-width:700px){
+  .admin-header{flex-wrap:wrap;gap:10px;padding:12px 14px}
+  .admin-main{padding:14px}
+  .post-manager-content{grid-template-columns:1fr!important;gap:18px}
+  .posts-grid{grid-template-columns:1fr!important}
+  .form-row{grid-template-columns:1fr!important}
+  .post-form input,.post-form select,.post-form textarea,.post-edit-form input,.post-edit-form select,.post-edit-form textarea{font-size:16px} /* prevents iOS auto-zoom */
+  .post-actions{flex-wrap:wrap;gap:8px}
+  .post-actions .btn{min-height:42px}
+  .orders-table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .modal,.order-modal{width:100%!important;max-width:100%!important;border-radius:14px 14px 0 0}
+  .danger-zone{margin-bottom:8px}
+}
+
+/* ===== Admin: post preview & draft workflow ===== */
+.post-preview{margin:14px 0}
+.post-preview-label{font-size:12px;font-weight:800;letter-spacing:1px;color:#9a642b;text-transform:uppercase;margin:0 0 8px}
+.post-preview-card{max-width:340px;border:2px dashed var(--gold);border-radius:14px;overflow:hidden;background:#fff}
+.post-preview-card img{width:100%;max-height:240px;object-fit:cover;display:block}
+.post-preview-card>div{padding:14px 16px}
+.post-preview-card h3{margin:8px 0 6px;font:700 19px Georgia,serif}
+.post-preview-card p{color:#6c554b;line-height:1.5;margin:0;font-size:14px}
+.post-preview-noimg{height:140px;display:flex;align-items:center;justify-content:center;background:#f4e8d9;color:#a58868;font-size:13px;font-weight:700}
+.post-submit-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px}
+.post-submit-hint{font-size:13px;margin-top:10px}
+.draft-badge{position:absolute;left:8px;bottom:8px;background:#b3541e;color:#fff;font-size:10px;font-weight:800;letter-spacing:.5px;padding:5px 9px;border-radius:6px}
+.post-image{position:relative}
+.post-card.unpublished{opacity:.85;outline:2px dashed #d9a24a}
+@media(max-width:700px){.post-submit-row .btn{flex:1;min-width:150px}}
+
+/* ===== Announcement banner & settings form ===== */
+.announce-bar{margin:0;background:var(--ink);color:#f5d89c;text-align:center;font-size:14px;font-weight:700;padding:10px 16px;line-height:1.4}
+.settings-form h3{margin:22px 0 8px;font:700 19px Georgia,serif;color:#472a1d}
+.settings-form h3:first-of-type{margin-top:4px}
+.product-toggles{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;margin-bottom:6px}
+.product-toggle{display:flex;align-items:center;gap:9px;background:#fffdf9;border:1px solid var(--line);border-radius:9px;padding:10px 12px;cursor:pointer;font-weight:700;font-size:14px}
+.product-toggle small{color:#9a642b;font-weight:600}
+.product-toggle input{width:17px;height:17px;accent-color:var(--gold)}

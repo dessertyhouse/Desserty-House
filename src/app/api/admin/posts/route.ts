@@ -99,6 +99,7 @@ export async function POST(request: NextRequest) {
 
     // Parse form data
     let title: string, description: string, kind: string, file: File | null;
+    let publishNow = true; // default: publish immediately; 'publish'='false' saves a draft
     
     const contentType = request.headers.get('content-type') || '';
     
@@ -108,6 +109,7 @@ export async function POST(request: NextRequest) {
       description = String(formData.get('description') || '');
       kind = String(formData.get('kind') || 'offer');
       file = formData.get('image') as File | null;
+      publishNow = String(formData.get('publish') ?? 'true') !== 'false';
     } else {
       const body = await request.json();
       title = body.title || '';
@@ -220,7 +222,7 @@ export async function POST(request: NextRequest) {
         cloudinary_public_id: uploadResult.public_id,
         image_url: uploadResult.secure_url,
         post_code: postCode,
-        is_published: true
+        is_published: publishNow
       })
       .select()
       .single();

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import PostManager from './PostManager';
+import SettingsManager from './SettingsManager';
 
 // Types
 type Order = {
@@ -46,7 +47,7 @@ const PAYMENT_STATUSES = [
   'Cash on delivery'
 ];
 
-const PRODUCTS = ['BRW-001', 'BEN-001', 'FON-001', 'BOM-001', 'CUP-001', 'DON-001', 'BDY-001'];
+const PRODUCTS = ['BRW-001', 'BEN-001', 'FON-001', 'BOM-001', 'CUP-001', 'DON-001', 'BDY-001', 'PIZ-001'];
 
 export default function Admin() {
   // Auth state
@@ -68,6 +69,7 @@ export default function Admin() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showManual, setShowManual] = useState(false);
   const [showPosts, setShowPosts] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Manual order form
@@ -178,6 +180,31 @@ export default function Admin() {
       }
     } catch {
       showNotification('error', 'Failed to update order');
+    }
+  }
+
+  async function deleteOrder(order: Order) {
+    if (!confirm(`Permanently delete order ${order.order_id} (${order.customer_name})?\n\nThis removes it from the database to free up space. The customer will no longer be able to track it. This cannot be undone.`)) {
+      return;
+    }
+    try {
+      const res = await fetch('/api/admin', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: order.id })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        showNotification('success', `Order ${order.order_id} deleted`);
+        loadOrders();
+        setSelectedOrder(null);
+      } else {
+        showNotification('error', data.error || 'Failed to delete order');
+      }
+    } catch {
+      showNotification('error', 'Failed to delete order');
     }
   }
 
@@ -390,6 +417,9 @@ export default function Admin() {
             <button className="btn gold" onClick={() => setShowPosts(!showPosts)}>
               {showPosts ? 'Hide' : 'Manage'} Posts
             </button>
+            <button className="btn" onClick={() => setShowSettings(!showSettings)}>
+              {showSettings ? 'Hide' : 'Website'} Settings
+            </button>
           </div>
         </div>
 
@@ -397,6 +427,13 @@ export default function Admin() {
         {showPosts && (
           <section className="admin-section">
             <PostManager />
+          </section>
+        )}
+
+        {/* Website Settings */}
+        {showSettings && (
+          <section className="admin-section">
+            <SettingsManager />
           </section>
         )}
 
@@ -611,6 +648,19 @@ export default function Admin() {
                   onSave={updateOrder}
                   onCancel={() => setSelectedOrder(null)}
                 />
+
+                <div className="danger-zone">
+                  <button
+                    className="btn small danger"
+                    onClick={() => deleteOrder(selectedOrder)}
+                    title="Permanently remove this order from the database to free up space"
+                  >
+                    Delete this order permanently
+                  </button>
+                  <p className="muted" style={{ fontSize: '12px', marginTop: '6px' }}>
+                    Tip: delete only old completed/cancelled orders to keep the database clean.
+                  </p>
+                </div>
               </div>
             </div>
           </div>
