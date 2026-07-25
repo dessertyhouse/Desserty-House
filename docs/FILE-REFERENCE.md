@@ -63,6 +63,17 @@
 | `/order`, `/track` | `order/`, `track/` | BreadcrumbList (transactional pages) |
 | `/privacy`, `/terms`, `/shipping-policy`, `/refund-policy` | policy pages | BreadcrumbList |
 
+## Admin-editable Website Settings (new)
+
+| File | Purpose |
+|---|---|
+| `src/lib/settings.ts` | Reads admin-editable settings (phone, email, Instagram, announcement banner, delivery areas, hours, hidden products, hero text) from the Supabase `site_settings` table with safe code defaults. |
+| `src/app/api/admin/settings/route.ts` | GET/PUT API for the settings (admin-authenticated, validated, audit-logged). |
+| `src/app/admin/SettingsManager.tsx` | "Website Settings" tab in the admin dashboard. |
+| `sql/site-settings-migration.sql` | Creates the `site_settings` table (run once in Supabase SQL Editor; safe if it already exists). |
+
+Public pages re-render at most every 60 seconds, so saved settings go live within a minute without any redeploy.
+
 ## Backend (unchanged from original repo)
 
 `src/app/api/*` (orders, admin, media proxy), `src/app/admin/*` (dashboard),

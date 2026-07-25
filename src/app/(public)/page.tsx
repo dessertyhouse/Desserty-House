@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { products } from '@/app/products';
 import { media } from '@/app/media';
 import { site } from '@/lib/site';
+import { getSettings, waOrderLink } from '@/lib/settings';
 
 export const metadata: Metadata = {
   title: `${site.name} | Home Bakery in Chennai — Cakes, Brownies & Fondant Art`,
@@ -11,7 +12,12 @@ export const metadata: Metadata = {
   alternates: { canonical: '/' },
 };
 
-export default function Home() {
+export const revalidate = 60;
+
+export default async function Home() {
+  const settings = await getSettings();
+  const visibleProducts = products.filter((p) => !settings.hiddenProducts.includes(p.id));
+  const wa = waOrderLink(settings);
   return (
     <main>
       <section
@@ -22,14 +28,14 @@ export default function Home() {
       >
         <div className="shell">
           <p className="eyebrow">BROWNIES · CAKES · FONDANT ART</p>
-          <h1>Handmade cakes &amp; brownies in Chennai, made for the sweetest moments.</h1>
+          <h1>{settings.heroTitle || 'Handmade cakes & brownies in Chennai, made for the sweetest moments.'}</h1>
           <p className="lead">
-            Fresh brownies, bento cakes, birthday cakes and hand-crafted fondant creations — made to
-            order by {site.name}, a home bakery in Chennai. Choose egg or eggless for your celebration.
+            {settings.heroSubtitle ||
+              `Fresh brownies, bento cakes, birthday cakes and hand-crafted fondant creations — made to order by ${site.name}, a home bakery in Chennai. Choose egg or eggless for your celebration.`}
           </p>
           <div className="hero-actions">
             <Link className="btn gold" href="/products">Explore the menu</Link>
-            <a className="hero-text-link" href={site.whatsappOrder} rel="noopener">Talk to us on WhatsApp →</a>
+            <a className="hero-text-link" href={wa} rel="noopener">Talk to us on WhatsApp →</a>
           </div>
           <div className="trust-row">
             <span>✦ Egg &amp; eggless choices</span>
@@ -47,7 +53,7 @@ export default function Home() {
           separately based on your location — see our <Link href="/shipping-policy">delivery policy</Link>.
         </p>
         <div className="grid">
-          {products.map((p) => (
+          {visibleProducts.map((p) => (
             <article className="card" key={p.id}>
               <img
                 src={p.gallery[0].image}
