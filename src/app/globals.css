@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #FFFDF9;
+  --chocolate: #2D221E;
+  --accent: #E07A5F;
+  --amber: #F4A261;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--chocolate);
+}
+
+h1, h2, h3, h4, .font-serif {
+  font-family: var(--font-playfair), serif;
+}
+
+.font-sans {
+  font-family: var(--font-jakarta), var(--font-inter), sans-serif;
+}
+
+@layer base {
+  input, textarea, select {
+    @apply border-line focus:ring-amber focus:border-amber transition-colors;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-chocolate text-white px-6 py-3 rounded-lg font-bold hover:opacity-90 transition shadow-sm;
+  }
+  
+  .btn-outline {
+    @apply border-2 border-chocolate text-chocolate px-6 py-3 rounded-lg font-bold hover:bg-cream transition;
+  }
+  
+  .section-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+}
