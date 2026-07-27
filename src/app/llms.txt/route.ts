@@ -2,8 +2,12 @@ import { prisma } from '@/lib/prisma'
 import { getSiteSettings } from '@/lib/settings'
 import { NextResponse } from 'next/server'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
-  const settings = await getSiteSettings()
+  try {
+    const settings = await getSiteSettings()
+// ... rest of code
   const products = await prisma.product.findMany({
     where: { isAvailable: true },
     include: { category: true }

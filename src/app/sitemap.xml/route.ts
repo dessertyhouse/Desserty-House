@@ -1,7 +1,11 @@
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
-  const products = await prisma.product.findMany({ where: { isAvailable: true } })
+  try {
+    const products = await prisma.product.findMany({ where: { isAvailable: true } })
+// ... rest of code
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://desserty-house.vercel.app'
   
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
