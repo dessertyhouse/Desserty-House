@@ -1,28 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateAdmin, verifyAdminSession, logoutAdmin } from '@/lib/auth';
-import { logAuditEvent, createAuditContext } from '@/lib/audit-log';
-import { checkRateLimit, RATE_LIMITS, getClientIP } from '@/lib/rate-limit';
 
 /**
  * POST /api/admin/auth - Admin login
- * Rate limited: 5 attempts per minute per IP
  */
 export async function POST(request: NextRequest) {
   try {
-    // Rate limiting on login attempts
-    const clientIP = getClientIP(request);
-    const rateLimit = checkRateLimit(clientIP, {
-      windowMs: 60000,
-      maxRequests: 5
-    });
-
-    if (!rateLimit.success) {
-      return NextResponse.json(
-        { error: 'Too many login attempts. Please wait and try again.' },
-        { status: 429 }
-      );
-    }
-
     const body = await request.json();
     const { password } = body;
 
@@ -41,14 +24,6 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
-
-    // Log successful login
-    await logAuditEvent({
-      action: 'admin_login',
-      entity_type: 'admin',
-      ...createAuditContext(request),
-      metadata: { success: true }
-    });
 
     return NextResponse.json({
       success: true,
@@ -89,13 +64,6 @@ export async function GET(request: NextRequest) {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    // Log logout action
-    await logAuditEvent({
-      action: 'admin_logout',
-      entity_type: 'admin',
-      ...createAuditContext(request)
-    });
-
     await logoutAdmin();
 
     return NextResponse.json({
