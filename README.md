@@ -20,12 +20,48 @@ A clean replacement for the old unrelated repository. It provides a public menu 
 
 ## What is included
 
-- **Products**: Brownies (`BRW-001`), Bento Cakes (`BEN-001`), Fondant Cakes (`FON-001`), Bomboloni (`BOM-001`), Cupcakes (`CUP-001`), Donuts (`DON-001`), Birthday Cakes (`BDY-001`).
+- **Products**: Brownies (`BRW-001`), Bento Cakes (`BEN-001`), Fondant Cakes (`FON-001`), Bomboloni (`BOM-001`), Cupcakes (`CUP-001`), Donuts (`DON-001`), Birthday Cakes (`BDY-001`), **Pizza (`PIZ-001`)** — plus any category the owner adds from the admin dashboard.
 - Customer selects egg/eggless, desired date, quantity and Chennai locality.
 - Every submitted order receives a unique `DH-YYYY-XXXXXX` order ID. The same number is sent to WhatsApp.
 - Admin tracks workflow, scheduled follow-up, payment status, private notes and a customer-visible update.
 - Admin can add WhatsApp orders through the API; a dedicated "add manual order" screen is available.
 - Manual payments only: no QR image or Razorpay integration is shown to customers. Admin sends the correct QR/UPI on WhatsApp after approving the order.
+
+## The admin dashboard controls the whole website
+
+Sign in at `/admin` with `ADMIN_DASHBOARD_PASSWORD`. Five tabs:
+
+| Tab | What the owner can change without any code |
+|-----|--------------------------------------------|
+| **Orders** | Workflow status, payment status, follow-up schedule, customer-visible updates, private notes, add WhatsApp orders, delete old orders |
+| **Menu & Products** | Category name / tagline / description / bullet points · reorder categories · hide categories · **edit every item inside a category (title, description, photo)** · hide individual items · add extra items with a photo · add or remove whole categories |
+| **Website Content** | Hero trust badges (text + icon) · "how it works" steps · FAQs · testimonials · About page copy · "why choose us" points · lead times · **the SEO description and the AI-assistant text that feeds `llms.txt`** |
+| **Blog & Offers** | Publish/unpublish posts, offers and the customer feedback wall |
+| **Settings** | Announcement banner · phone / WhatsApp / email / Instagram · business hours · delivery areas · menu visibility · home hero heading and sub-heading |
+
+Everything is stored in the Supabase `site_settings` table and merged over the
+code defaults, so **if the database is empty or unreachable the site still
+renders perfectly** from the values in `src/lib/site.ts`, `src/lib/content.ts`
+and `src/app/products.ts`.
+
+Public pages revalidate every 60 seconds, so edits appear within about a
+minute. `llms.txt`, `llms-full.txt` and `sitemap.xml` refresh hourly.
+
+### Required SQL
+
+The dashboard needs one table. Run **`sql/site-settings-migration.sql`** in the
+Supabase SQL editor (safe to re-run). It stores three keys: `site`, `menu` and
+`content`.
+
+## Icons
+
+All decorative icons are inline SVG React components in
+[`src/components/Icons.tsx`](src/components/Icons.tsx) — committed as ordinary
+source code, so GitHub accepts them with no binary uploads and no Cloudinary
+folder. They inherit `currentColor`, add zero network requests and satisfy the
+strict Content-Security-Policy in `next.config.ts`. Use them like
+`<IconPizza size={20} />`, or `<ProductIcon slug="pizza" />` to pick an icon
+automatically from a product slug.
 
 ## Security Features
 
