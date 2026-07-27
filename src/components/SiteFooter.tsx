@@ -1,72 +1,46 @@
-import Link from 'next/link';
-import { site } from '../lib/site';
-import { defaultSettings, waLink, type SiteSettings } from '../lib/settings';
-import { getMenuProducts } from '../lib/menu';
+'use client'
 
-/**
- * Sitewide footer: only customer-relevant links (products, company pages,
- * policies) plus the NAP (Name/Address/Phone) block for Local SEO.
- * Machine files (sitemap, RSS, llms.txt) are intentionally NOT linked here —
- * crawlers find them via robots.txt and <link> tags, customers don't need them.
- * Contact details are admin-editable via Website Settings.
- */
-export default async function SiteFooter({ settings = defaultSettings }: { settings?: SiteSettings }) {
-  const visibleProducts = await getMenuProducts();
+import { formatCurrency } from '@/lib/utils'
+
+export default function SiteFooter({ settings }: { settings: any }) {
   return (
-    <footer className="site-footer">
-      <div className="shell footer-grid">
-        <div>
-          <p className="brand footer-brand">Desserty House</p>
-          <p className="muted">{site.tagline}.</p>
-          <address className="footer-nap" itemScope itemType="https://schema.org/Bakery">
-            <span itemProp="name">{site.name}</span>
-            <br />
-            <span itemProp="address" itemScope itemType="https://schema.org/PostalAddress">
-              <span itemProp="addressLocality">{site.address.locality}</span>,{' '}
-              <span itemProp="addressRegion">{site.address.region}</span>,{' '}
-              <span itemProp="addressCountry">India</span>
-            </span>
-            <br />
-            <a href={`tel:+${settings.phoneDigits}`} itemProp="telephone">{settings.phoneDisplay}</a>
-            <br />
-            <a href={`mailto:${settings.email}`} itemProp="email">{settings.email}</a>
-          </address>
+    <footer className="bg-chocolate text-cream py-16 px-4">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
+        <div className="col-span-1 md:col-span-2">
+          <h3 className="font-serif text-3xl font-bold mb-6">Desserty House</h3>
+          <p className="text-cream/70 max-w-sm mb-8 leading-relaxed">
+            We bake happiness daily using only the finest ingredients. Artisanal treats delivered straight to your door.
+          </p>
+          <div className="flex gap-4">
+            <span className="font-bold text-amber">Order via:</span>
+            <a href={`https://wa.me/${settings.whatsappNumber.replace(/[^0-9]/g, '')}`} className="underline hover:text-amber transition">WhatsApp</a>
+            <a href={`mailto:${settings.supportEmail}`} className="underline hover:text-amber transition">Email</a>
+          </div>
         </div>
-        <nav aria-label="Products">
-          <p className="footer-head">Our Menu</p>
-          {visibleProducts.map((p) => (
-            <Link key={p.slug} href={`/menu/${p.slug}`}>{p.name}</Link>
-          ))}
-          <Link href="/custom-cakes">Custom Cakes</Link>
-          <Link href="/wedding-cakes">Wedding Cakes</Link>
-        </nav>
-        <nav aria-label="Company">
-          <p className="footer-head">Explore</p>
-          <Link href="/order">Place an order</Link>
-          <Link href="/track">Track your order</Link>
-          <Link href="/showcase">Gallery</Link>
-          <Link href="/testimonials">Testimonials</Link>
-          <Link href="/feedback">Customer Feedback</Link>
-          <Link href="/posts">Offers &amp; news</Link>
-          <Link href="/faq">FAQs</Link>
-          <Link href="/about">About us</Link>
-          <Link href="/contact">Contact</Link>
-        </nav>
-        <nav aria-label="Legal">
-          <p className="footer-head">Policies</p>
-          <Link href="/privacy">Privacy Policy</Link>
-          <Link href="/terms">Terms of Service</Link>
-          <Link href="/shipping-policy">Shipping &amp; Delivery</Link>
-          <Link href="/refund-policy">Refund Policy</Link>
-        </nav>
+        
+        <div>
+          <h4 className="font-bold uppercase tracking-wider text-sm mb-6 text-amber">Shop</h4>
+          <ul className="space-y-4 text-cream/80 font-medium">
+            <li><a href="/products" className="hover:text-amber transition">All Desserts</a></li>
+            <li><a href="/custom-cakes" className="hover:text-amber transition">Custom Cakes</a></li>
+            <li><a href="/wedding-cakes" className="hover:text-amber transition">Wedding Cakes</a></li>
+            <li><a href="/showcase" className="hover:text-amber transition">Gallery</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 className="font-bold uppercase tracking-wider text-sm mb-6 text-amber">Support</h4>
+          <ul className="space-y-4 text-cream/80 font-medium">
+            <li><a href="/faq" className="hover:text-amber transition">FAQs</a></li>
+            <li><a href="/contact" className="hover:text-amber transition">Contact Us</a></li>
+            <li><a href="/privacy" className="hover:text-amber transition">Privacy Policy</a></li>
+            <li><a href="/shipping-policy" className="hover:text-amber transition">Shipping Info</a></li>
+          </ul>
+        </div>
       </div>
-      <div className="shell footer-bottom">
-        <p>
-          © {new Date().getFullYear()} {site.legalName}, {site.address.locality}. All rights reserved. ·{' '}
-          <a href={settings.instagram} rel="noopener">Instagram</a> ·{' '}
-          <a href={waLink(settings)} rel="noopener">WhatsApp</a>
-        </p>
+      <div className="max-w-7xl mx-auto border-t border-cream/10 mt-16 pt-8 text-center text-sm text-cream/40">
+        © {new Date().getFullYear()} Desserty House. All treats reserved.
       </div>
     </footer>
-  );
+  )
 }

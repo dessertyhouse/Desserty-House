@@ -1,782 +1,96 @@
-'use client';
+import { prisma } from '@/lib/prisma'
+import { getSiteSettings } from '@/lib/settings'
+import { AlertCircle, CheckCircle2, ShoppingCart, MessageSquare, TrendingUp, Tag, ShoppingBag } from 'lucide-react'
 
-import { useState, useEffect, useCallback } from 'react';
-import PostManager from './PostManager';
-import SettingsManager from './SettingsManager';
-import MenuManager from './MenuManager';
+export default async function AdminDashboard() {
+  const productCount = await prisma.product.count()
+  const reviewCount = await prisma.review.count()
+  const categoryCount = await prisma.category.count()
+  const settings = await getSiteSettings()
 
-// Types
-type Order = {
-  id: string;
-  order_id: string;
-  customer_name: string;
-  phone: string;
-  product_id: string;
-  event_date: string;
-  quantity: string;
-  area: string;
-  status: string;
-  payment_status: string;
-  scheduled_at?: string;
-  admin_notes?: string;
-  customer_message?: string;
-  source?: string;
-  notes?: string;
-  created_at: string;
-};
-
-type AuthState = 'loading' | 'login' | 'authenticated' | 'error';
-
-const ORDER_STATUSES = [
-  'Request received',
-  'Awaiting customer reply',
-  'Quote sent',
-  'Awaiting advance',
-  'Confirmed',
-  'In production',
-  'Ready',
-  'Out for delivery',
-  'Completed',
-  'Cancelled'
-];
-
-const PAYMENT_STATUSES = [
-  'Not requested',
-  'QR / UPI sent',
-  'Advance received',
-  'Paid in full',
-  'Cash on delivery'
-];
-
-const PRODUCTS = ['BRW-001', 'BEN-001', 'FON-001', 'BOM-001', 'CUP-001', 'DON-001', 'BDY-001', 'PIZ-001'];
-
-export default function Admin() {
-  // Auth state
-  const [authState, setAuthState] = useState<AuthState>('loading');
-  const [password, setPassword] = useState('');
-  const [authError, setAuthError] = useState('');
-
-  // Data state
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
-  // Filter/sort state
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [sortBy, setSortBy] = useState<'event_date' | 'created_at' | 'order_id'>('event_date');
-
-  // UI state
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [showManual, setShowManual] = useState(false);
-  const [showPosts, setShowPosts] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
-  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-
-  // Manual order form
-  const [manualForm, setManualForm] = useState({
-    customer_name: '',
-    phone: '',
-    product_id: 'BRW-001',
-    event_date: '',
-    quantity: '',
-    area: '',
-    notes: '',
-    status: 'Request received',
-    payment_status: 'Not requested'
-  });
-
-  // Check auth status on mount
-  useEffect(() => {
-    checkAuth();
-  }, []);
-
-  async function checkAuth() {
-    try {
-      const res = await fetch('/api/admin/auth');
-      const data = await res.json();
-      setAuthState(data.authenticated ? 'authenticated' : 'login');
-      if (data.authenticated) {
-        loadOrders();
-      }
-    } catch {
-      setAuthState('login');
-    }
-  }
-
-  async function login(e: React.FormEvent) {
-    e.preventDefault();
-    setAuthError('');
-    setLoading(true);
-
-    try {
-      const res = await fetch('/api/admin/auth', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password })
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        setAuthState('authenticated');
-        loadOrders();
-      } else {
-        setAuthError(data.error || 'Invalid password');
-      }
-    } catch {
-      setAuthError('Login failed. Please try again.');
-    }
-
-    setLoading(false);
-  }
-
-  async function logout() {
-    try {
-      await fetch('/api/admin/auth', { method: 'DELETE' });
-    } catch {
-      // Ignore errors
-    }
-    setAuthState('login');
-    setPassword('');
-    setOrders([]);
-  }
-
-  async function loadOrders() {
-    setLoading(true);
-    setError('');
-
-    try {
-      const res = await fetch('/api/admin');
-      const data = await res.json();
-
-      if (data.success) {
-        setOrders(data.orders);
-      } else {
-        setError(data.error || 'Failed to load orders');
-      }
-    } catch {
-      setError('Failed to load orders. Please try again.');
-    }
-
-    setLoading(false);
-  }
-
-  async function updateOrder(order: Order) {
-    try {
-      const res = await fetch('/api/admin', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(order)
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        showNotification('success', 'Order updated successfully');
-        loadOrders();
-        setSelectedOrder(null);
-      } else {
-        showNotification('error', data.error || 'Failed to update order');
-      }
-    } catch {
-      showNotification('error', 'Failed to update order');
-    }
-  }
-
-  async function deleteOrder(order: Order) {
-    if (!confirm(`Permanently delete order ${order.order_id} (${order.customer_name})?\n\nThis removes it from the database to free up space. The customer will no longer be able to track it. This cannot be undone.`)) {
-      return;
-    }
-    try {
-      const res = await fetch('/api/admin', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: order.id })
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        showNotification('success', `Order ${order.order_id} deleted`);
-        loadOrders();
-        setSelectedOrder(null);
-      } else {
-        showNotification('error', data.error || 'Failed to delete order');
-      }
-    } catch {
-      showNotification('error', 'Failed to delete order');
-    }
-  }
-
-  async function addManualOrder(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const res = await fetch('/api/admin', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(manualForm)
-      });
-
-      const data = await res.json();
-
-      if (data.success) {
-        showNotification('success', `WhatsApp order added: ${data.order_id}`);
-        setShowManual(false);
-        setManualForm({
-          customer_name: '',
-          phone: '',
-          product_id: 'BRW-001',
-          event_date: '',
-          quantity: '',
-          area: '',
-          notes: '',
-          status: 'Request received',
-          payment_status: 'Not requested'
-        });
-        loadOrders();
-      } else {
-        showNotification('error', data.error || 'Failed to add order');
-      }
-    } catch {
-      showNotification('error', 'Failed to add order');
-    }
-
-    setLoading(false);
-  }
-
-  function showNotification(type: 'success' | 'error', message: string) {
-    setNotification({ type, message });
-    setTimeout(() => setNotification(null), 4000);
-  }
-
-  // Filter and sort orders
-  const filteredOrders = orders
-    .filter(order => {
-      // Status filter
-      if (statusFilter !== 'All' && order.status !== statusFilter) return false;
-      
-      // Search filter
-      if (search) {
-        const searchLower = search.toLowerCase();
-        const matchesSearch = 
-          order.order_id.toLowerCase().includes(searchLower) ||
-          order.customer_name.toLowerCase().includes(searchLower) ||
-          order.phone.includes(search) ||
-          order.product_id.toLowerCase().includes(searchLower) ||
-          (order.area?.toLowerCase() || '').includes(searchLower);
-        if (!matchesSearch) return false;
-      }
-      
-      return true;
-    })
-    .sort((a, b) => {
-      if (sortBy === 'event_date') {
-        return new Date(a.event_date).getTime() - new Date(b.event_date).getTime();
-      }
-      if (sortBy === 'created_at') {
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-      }
-      return a.order_id.localeCompare(b.order_id);
-    });
-
-  // Stats
-  const stats = {
-    open: orders.filter(o => !['Completed', 'Cancelled'].includes(o.status)).length,
-    followUps: orders.filter(o => {
-      if (!o.scheduled_at) return false;
-      const today = new Date().toISOString().slice(0, 10);
-      return o.scheduled_at.slice(0, 10) === today;
-    }).length,
-    paid: orders.filter(o => ['Advance received', 'Paid in full'].includes(o.payment_status)).length,
-    total: orders.length
-  };
-
-  // Login screen
-  if (authState === 'login') {
-    return (
-      <div className="admin-login-page">
-        <div className="admin-login-card">
-          <div className="login-header">
-            <div className="brand-logo">Desserty House</div>
-            <h1>Owner Dashboard</h1>
-            <p className="muted">Enter your dashboard password to continue</p>
-          </div>
-
-          <form onSubmit={login} className="login-form">
-            <label>
-              Password
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                placeholder="Enter admin password"
-                autoFocus
-              />
-            </label>
-
-            {authError && <div className="login-error">{authError}</div>}
-
-            <button type="submit" className="btn gold login-btn" disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign in'}
-            </button>
-          </form>
-
-          <div className="login-footer">
-            <a href="/" target="_blank">View website →</a>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Loading state
-  if (authState === 'loading') {
-    return (
-      <div className="admin-loading">
-        <div className="spinner large"></div>
-        <p>Loading dashboard...</p>
-      </div>
-    );
-  }
-
-  // Main admin dashboard
   return (
-    <div className="admin-dashboard">
-      {/* Notification */}
-      {notification && (
-        <div className={`admin-notification ${notification.type}`}>
-          {notification.message}
-          <button onClick={() => setNotification(null)}>×</button>
+    <div className="space-y-8">
+      <div>
+        <h1 className="font-serif text-4xl font-bold text-chocolate mb-2">Welcome Back, Admin</h1>
+        <p className="text-gray-600">Here's what's happening at Desserty House today.</p>
+      </div>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <KPICard title="Total Products" value={productCount} icon={<ShoppingBag className="text-amber" />} />
+        <KPICard title="Categories" value={categoryCount} icon={<Tag className="text-amber" />} />
+        <KPICard title="Pending Reviews" value={reviewCount} icon={<MessageSquare className="text-amber" />} />
+        <KPICard title="WhatsApp Orders" value="N/A" icon={<TrendingUp className="text-amber" />} subtitle="Tracked via WA" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Automation Status */}
+        <div className="bg-white p-6 rounded-2xl border border-line shadow-sm">
+          <h2 className="font-serif text-2xl font-bold text-chocolate mb-6 flex items-center gap-2">
+            Automation Status
+          </h2>
+          <div className="space-y-4">
+            <StatusItem label="Direct WhatsApp Ordering" active={true} description="Main ordering flow is active" />
+            <StatusItem label="Automated Emails" active={settings.enableAutomatedEmails} description="Phase 2 Feature" />
+            <StatusItem label="Payment Gateway" active={settings.enableOnlinePayments} description="Phase 2 Feature" />
+            <StatusItem label="Live Tracking" active={settings.enableAutoOrderTrack} description="Phase 2 Feature" />
+          </div>
         </div>
+
+        {/* Quick Actions */}
+        <div className="bg-white p-6 rounded-2xl border border-line shadow-sm">
+          <h2 className="font-serif text-2xl font-bold text-chocolate mb-6">Quick Actions</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <QuickActionBtn label="Add New Product" href="/admin/products/new" />
+            <QuickActionBtn label="Edit Hero Banner" href="/admin/settings" />
+            <QuickActionBtn label="View Storefront" href="/" />
+            <QuickActionBtn label="Manage Reviews" href="/admin/reviews" />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function KPICard({ title, value, icon, subtitle }: any) {
+  return (
+    <div className="bg-white p-6 rounded-2xl border border-line shadow-sm">
+      <div className="flex justify-between items-start mb-4">
+        <div className="p-2 bg-cream rounded-lg">{icon}</div>
+      </div>
+      <span className="text-gray-500 text-sm font-bold uppercase tracking-wider">{title}</span>
+      <div className="text-3xl font-bold text-chocolate mt-1">{value}</div>
+      {subtitle && <div className="text-xs text-gray-400 mt-2">{subtitle}</div>}
+    </div>
+  )
+}
+
+function StatusItem({ label, active, description }: any) {
+  return (
+    <div className="flex items-center justify-between p-3 bg-[#FDFBF9] rounded-xl border border-line/50">
+      <div>
+        <div className="font-bold text-chocolate text-sm">{label}</div>
+        <div className="text-xs text-gray-500">{description}</div>
+      </div>
+      {active ? (
+        <span className="flex items-center gap-1 text-green-600 text-xs font-bold bg-green-50 px-2 py-1 rounded-full">
+          <CheckCircle2 size={12} /> ACTIVE
+        </span>
+      ) : (
+        <span className="flex items-center gap-1 text-gray-400 text-xs font-bold bg-gray-50 px-2 py-1 rounded-full">
+          <AlertCircle size={12} /> DISABLED
+        </span>
       )}
-
-      {/* Header */}
-      <header className="admin-header">
-        <div className="admin-header-left">
-          <div className="brand-logo">Desserty House</div>
-          <span className="header-badge">Owner Dashboard</span>
-        </div>
-        <div className="admin-header-right">
-          <button className="btn" onClick={loadOrders} disabled={loading}>
-            {loading ? '↻' : '↻'} Refresh
-          </button>
-          <a className="btn" href="/" target="_blank">View website →</a>
-          <button className="btn logout-btn" onClick={logout}>Logout</button>
-        </div>
-      </header>
-
-      <main className="admin-main">
-        {/* Stats */}
-        <div className="stats-grid">
-          <div className="stat-card">
-            <span className="stat-label">Open Orders</span>
-            <span className="stat-value">{stats.open}</span>
-          </div>
-          <div className="stat-card highlight">
-            <span className="stat-label">Follow-ups Today</span>
-            <span className="stat-value">{stats.followUps}</span>
-          </div>
-          <div className="stat-card success">
-            <span className="stat-label">Payments Received</span>
-            <span className="stat-value">{stats.paid}</span>
-          </div>
-          <div className="stat-card">
-            <span className="stat-label">Total Requests</span>
-            <span className="stat-value">{stats.total}</span>
-          </div>
-        </div>
-
-        {/* Toolbar */}
-        <div className="admin-toolbar">
-          <div className="toolbar-left">
-            <input
-              type="text"
-              placeholder="Search orders, name, phone..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="search-input"
-            />
-            <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
-              <option value="All">All Statuses</option>
-              {ORDER_STATUSES.map(s => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
-            <select value={sortBy} onChange={e => setSortBy(e.target.value as any)}>
-              <option value="event_date">Sort by Date</option>
-              <option value="created_at">Sort by Created</option>
-              <option value="order_id">Sort by Order ID</option>
-            </select>
-          </div>
-          <div className="toolbar-right">
-            <button className="btn" onClick={() => setShowManual(!showManual)}>
-              + Add WhatsApp Order
-            </button>
-            <button className="btn gold" onClick={() => setShowPosts(!showPosts)}>
-              {showPosts ? 'Hide' : 'Manage'} Posts
-            </button>
-            <button className="btn" onClick={() => setShowMenu(!showMenu)}>
-              {showMenu ? 'Hide' : 'Manage'} Menu
-            </button>
-            <button className="btn" onClick={() => setShowSettings(!showSettings)}>
-              {showSettings ? 'Hide' : 'Website'} Settings
-            </button>
-          </div>
-        </div>
-
-        {/* Posts Manager */}
-        {showPosts && (
-          <section className="admin-section">
-            <PostManager />
-          </section>
-        )}
-
-        {/* Menu Manager */}
-        {showMenu && (
-          <section className="admin-section">
-            <MenuManager />
-          </section>
-        )}
-
-        {/* Website Settings */}
-        {showSettings && (
-          <section className="admin-section">
-            <SettingsManager />
-          </section>
-        )}
-
-        {/* Manual Order Form */}
-        {showManual && (
-          <section className="admin-section manual-order-section">
-            <div className="section-header">
-              <h2>Add WhatsApp Order</h2>
-              <button className="btn close-btn" onClick={() => setShowManual(false)}>×</button>
-            </div>
-            <p className="muted">Log a conversation received directly on WhatsApp so every job appears in one production list.</p>
-            
-            <form onSubmit={addManualOrder} className="manual-form">
-              <div className="form-row">
-                <label>
-                  Customer name *
-                  <input
-                    type="text"
-                    required
-                    value={manualForm.customer_name}
-                    onChange={e => setManualForm({ ...manualForm, customer_name: e.target.value })}
-                  />
-                </label>
-                <label>
-                  WhatsApp number *
-                  <input
-                    type="tel"
-                    required
-                    placeholder="10-digit number"
-                    value={manualForm.phone}
-                    onChange={e => setManualForm({ ...manualForm, phone: e.target.value })}
-                  />
-                </label>
-              </div>
-              <div className="form-row">
-                <label>
-                  Product ID *
-                  <select
-                    required
-                    value={manualForm.product_id}
-                    onChange={e => setManualForm({ ...manualForm, product_id: e.target.value })}
-                  >
-                    {PRODUCTS.map(p => (
-                      <option key={p} value={p}>{p}</option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Required date *
-                  <input
-                    type="date"
-                    required
-                    value={manualForm.event_date}
-                    onChange={e => setManualForm({ ...manualForm, event_date: e.target.value })}
-                  />
-                </label>
-                <label>
-                  Quantity *
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g., 1 kg, 12 pieces"
-                    value={manualForm.quantity}
-                    onChange={e => setManualForm({ ...manualForm, quantity: e.target.value })}
-                  />
-                </label>
-              </div>
-              <div className="form-row">
-                <label>
-                  Chennai area
-                  <input
-                    type="text"
-                    placeholder="Locality"
-                    value={manualForm.area}
-                    onChange={e => setManualForm({ ...manualForm, area: e.target.value })}
-                  />
-                </label>
-                <label>
-                  Initial status
-                  <select
-                    value={manualForm.status}
-                    onChange={e => setManualForm({ ...manualForm, status: e.target.value })}
-                  >
-                    {ORDER_STATUSES.map(s => (
-                      <option key={s} value={s}>{s}</option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-              <label>
-                Order notes
-                <textarea
-                  placeholder="Customer request details..."
-                  value={manualForm.notes}
-                  onChange={e => setManualForm({ ...manualForm, notes: e.target.value })}
-                />
-              </label>
-              <button type="submit" className="btn gold" disabled={loading}>
-                {loading ? 'Saving...' : 'Save WhatsApp Order'}
-              </button>
-            </form>
-          </section>
-        )}
-
-        {/* Orders List */}
-        <section className="admin-section">
-          <div className="section-header">
-            <h2>Orders ({filteredOrders.length})</h2>
-            {error && <span className="error-text">{error}</span>}
-          </div>
-
-          {filteredOrders.length === 0 ? (
-            <div className="empty-state">
-              <p>No orders found.</p>
-            </div>
-          ) : (
-            <div className="orders-grid">
-              {filteredOrders.map(order => (
-                <div
-                  key={order.id}
-                  className={`order-card ${selectedOrder?.id === order.id ? 'selected' : ''}`}
-                  onClick={() => setSelectedOrder(order)}
-                >
-                  <div className="order-card-header">
-                    <span className="order-id">{order.order_id}</span>
-                    <span className={`status-badge ${order.status.toLowerCase().replace(/\s+/g, '-')}`}>
-                      {order.status}
-                    </span>
-                  </div>
-                  <div className="order-card-body">
-                    <p className="customer-name">{order.customer_name}</p>
-                    <p className="order-details">
-                      <span>{order.product_id}</span>
-                      <span>·</span>
-                      <span>{order.quantity}</span>
-                      <span>·</span>
-                      <span>{order.event_date}</span>
-                    </p>
-                    <p className="payment-status">
-                      Payment: <strong>{order.payment_status}</strong>
-                    </p>
-                  </div>
-                  <div className="order-card-footer">
-                    <a
-                      href={`https://wa.me/91${order.phone}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="whatsapp-link"
-                      onClick={e => e.stopPropagation()}
-                    >
-                      WhatsApp →
-                    </a>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </section>
-
-        {/* Order Detail Modal */}
-        {selectedOrder && (
-          <div className="order-modal-overlay" onClick={() => setSelectedOrder(null)}>
-            <div className="order-modal" onClick={e => e.stopPropagation()}>
-              <div className="modal-header">
-                <div>
-                  <h2>{selectedOrder.order_id}</h2>
-                  <span className="product-badge">{selectedOrder.product_id}</span>
-                </div>
-                <button className="btn close-btn" onClick={() => setSelectedOrder(null)}>×</button>
-              </div>
-
-              <div className="modal-body">
-                <div className="customer-section">
-                  <h3>Customer</h3>
-                  <p><strong>{selectedOrder.customer_name}</strong></p>
-                  <p>
-                    <a href={`https://wa.me/91${selectedOrder.phone}`} target="_blank" rel="noopener noreferrer">
-                      {selectedOrder.phone} (WhatsApp)
-                    </a>
-                  </p>
-                  <p>{selectedOrder.area || 'Area not specified'}</p>
-                </div>
-
-                <div className="details-grid">
-                  <div className="detail-item">
-                    <label>Required Date</label>
-                    <span>{selectedOrder.event_date}</span>
-                  </div>
-                  <div className="detail-item">
-                    <label>Quantity</label>
-                    <span>{selectedOrder.quantity}</span>
-                  </div>
-                  <div className="detail-item">
-                    <label>Source</label>
-                    <span>{selectedOrder.source || 'Website'}</span>
-                  </div>
-                  <div className="detail-item">
-                    <label>Created</label>
-                    <span>{new Date(selectedOrder.created_at).toLocaleDateString()}</span>
-                  </div>
-                </div>
-
-                {selectedOrder.notes && (
-                  <div className="notes-section">
-                    <h3>Customer Request</h3>
-                    <p>{selectedOrder.notes}</p>
-                  </div>
-                )}
-
-                <OrderEditForm
-                  order={selectedOrder}
-                  onSave={updateOrder}
-                  onCancel={() => setSelectedOrder(null)}
-                />
-
-                <div className="danger-zone">
-                  <button
-                    className="btn small danger"
-                    onClick={() => deleteOrder(selectedOrder)}
-                    title="Permanently remove this order from the database to free up space"
-                  >
-                    Delete this order permanently
-                  </button>
-                  <p className="muted" style={{ fontSize: '12px', marginTop: '6px' }}>
-                    Tip: delete only old completed/cancelled orders to keep the database clean.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
     </div>
-  );
+  )
 }
 
-// Order Edit Form Component
-function OrderEditForm({
-  order,
-  onSave,
-  onCancel
-}: {
-  order: Order;
-  onSave: (order: Order) => void;
-  onCancel: () => void;
-}) {
-  const [editedOrder, setEditedOrder] = useState(order);
-  const [saving, setSaving] = useState(false);
-
-  const hasChanges = JSON.stringify(editedOrder) !== JSON.stringify(order);
-
-  async function handleSave() {
-    setSaving(true);
-    await onSave(editedOrder);
-    setSaving(false);
-  }
-
+function QuickActionBtn({ label, href }: any) {
   return (
-    <div className="order-edit-form">
-      <h3>Update Order</h3>
-
-      <label>
-        Workflow Status
-        <select
-          value={editedOrder.status}
-          onChange={e => setEditedOrder({ ...editedOrder, status: e.target.value })}
-        >
-          {ORDER_STATUSES.map(s => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-      </label>
-
-      <label>
-        Payment Status
-        <select
-          value={editedOrder.payment_status}
-          onChange={e => setEditedOrder({ ...editedOrder, payment_status: e.target.value })}
-        >
-          {PAYMENT_STATUSES.map(s => (
-            <option key={s} value={s}>{s}</option>
-          ))}
-        </select>
-      </label>
-
-      <label>
-        Follow-up / Production Schedule
-        <input
-          type="datetime-local"
-          value={editedOrder.scheduled_at?.slice(0, 16) || ''}
-          onChange={e => setEditedOrder({
-            ...editedOrder,
-            scheduled_at: e.target.value || undefined
-          })}
-        />
-      </label>
-
-      <label>
-        Customer-Visible Update
-        <textarea
-          placeholder="Message shown to customer on order tracking page..."
-          value={editedOrder.customer_message || ''}
-          onChange={e => setEditedOrder({
-            ...editedOrder,
-            customer_message: e.target.value
-          })}
-        />
-      </label>
-
-      <label>
-        Private Admin Notes
-        <textarea
-          placeholder="Internal notes (not visible to customer)..."
-          value={editedOrder.admin_notes || ''}
-          onChange={e => setEditedOrder({
-            ...editedOrder,
-            admin_notes: e.target.value
-          })}
-        />
-      </label>
-
-      <div className="form-actions">
-        <button className="btn" onClick={onCancel}>Cancel</button>
-        <button
-          className="btn gold"
-          onClick={handleSave}
-          disabled={saving || !hasChanges}
-        >
-          {saving ? 'Saving...' : 'Save Changes'}
-        </button>
-      </div>
-    </div>
-  );
+    <a href={href} className="flex items-center justify-center p-4 bg-cream text-chocolate font-bold rounded-xl border border-line hover:bg-amber hover:border-amber transition-colors text-sm text-center">
+      {label}
+    </a>
+  )
 }
+
+
