@@ -13,11 +13,11 @@ async function main() {
   await prisma.siteSettings.create({
     data: {
       id: 'default',
-      whatsappNumber: "+1234567890",
+      whatsappNumber: "+919000000000",
       supportEmail: "orders@dessertyhouse.com",
-      heroTitle: "Freshly Baked Happiness",
-      heroSubtitle: "Artisanal treats made fresh daily. Order directly via WhatsApp!",
-      announcementText: "Orders delivered daily! Chat with us on WhatsApp to customize.",
+      heroTitle: "Artisanal Brownies, Cakes & Pizzas in Chennai",
+      heroSubtitle: "Hand-crafted treats and fresh artisanal pizzas made to order for your sweetest moments.",
+      announcementText: "✦ Now Serving Artisanal Pizzas! ✦ Chennai Delivery ✦ Egg & Eggless Choices",
       announcementActive: true,
       enableAutomatedEmails: false,
       enableOnlinePayments: false,
@@ -30,11 +30,41 @@ async function main() {
     data: { name: 'Cakes', slug: 'cakes' }
   })
   
-  const cupcakes = await prisma.category.create({
-    data: { name: 'Cupcakes', slug: 'cupcakes' }
+  const pizzas = await prisma.category.create({
+    data: { name: 'Artisanal Pizzas', slug: 'pizzas' }
+  })
+
+  const brownies = await prisma.category.create({
+    data: { name: 'Brownies', slug: 'brownies' }
   })
 
   // Create Products
+  await prisma.product.create({
+    data: {
+      title: 'Classic Margherita Pizza',
+      slug: 'margherita-pizza',
+      description: 'Hand-stretched sourdough crust, premium mozzarella, fresh basil, and our signature tomato sauce.',
+      price: 12.00,
+      images: ['https://res.cloudinary.com/pjn0251d/image/upload/v1784551591/dh-showcase-46_ehsejs.webp'],
+      isBestseller: true,
+      dietaryTags: ['Vegetarian'],
+      categoryId: pizzas.id
+    }
+  })
+
+  await prisma.product.create({
+    data: {
+      title: 'Chocolate Fudge Brownie Box',
+      slug: 'chocolate-fudge-brownies',
+      description: 'Ultra-gooey fudge brownies made with premium dark chocolate. Box of 6.',
+      price: 15.00,
+      images: ['https://res.cloudinary.com/pjn0251d/image/upload/v1784551591/dh-showcase-46_ehsejs.webp'],
+      isBestseller: true,
+      dietaryTags: ['Eggless'],
+      categoryId: brownies.id
+    }
+  })
+
   await prisma.product.create({
     data: {
       title: 'Chocolate Fudge Cake',
@@ -44,30 +74,11 @@ async function main() {
       images: ['https://res.cloudinary.com/pjn0251d/image/upload/v1784551591/dh-showcase-46_ehsejs.webp'],
       isBestseller: true,
       dietaryTags: ['Eggless'],
-      categoryId: cakes.id,
-      variants: {
-        create: [
-          { name: '500g', price: 35.00 },
-          { name: '1kg', price: 60.00 }
-        ]
-      }
+      categoryId: cakes.id
     }
   })
 
-  await prisma.product.create({
-    data: {
-      title: 'Vanilla Dream Cupcakes',
-      slug: 'vanilla-dream-cupcakes',
-      description: 'Fluffy vanilla cupcakes topped with Madagascar vanilla bean buttercream.',
-      price: 18.00,
-      images: ['https://res.cloudinary.com/pjn0251d/image/upload/v1784551591/dh-showcase-46_ehsejs.webp'],
-      isBestseller: true,
-      dietaryTags: ['Gluten-Free'],
-      categoryId: cupcakes.id
-    }
-  })
-
-  console.log('Seed data created successfully')
+  console.log('Seed data with Pizzas created successfully')
 }
 
 main()
