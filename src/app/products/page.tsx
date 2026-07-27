@@ -3,7 +3,8 @@ import { getSiteSettings } from '@/lib/settings'
 import ProductListing from '@/components/ProductListing'
 import SiteHeader from '@/components/SiteHeader'
 
-export default async function ProductsPage({ searchParams }: { searchParams: any }) {
+export default async function ProductsPage({ searchParams }: { searchParams: Promise<any> }) {
+  const sParams = await searchParams
   const settings = await getSiteSettings()
   const products = await prisma.product.findMany({
     where: { isAvailable: true },
