@@ -36,8 +36,11 @@ Sign in at `/admin` with `ADMIN_DASHBOARD_PASSWORD`. Five tabs:
 | **Orders** | Workflow status, payment status, follow-up schedule, customer-visible updates, private notes, add WhatsApp orders, delete old orders |
 | **Menu & Products** | Category name / tagline / description / bullet points · reorder categories · hide categories · **edit every item inside a category (title, description, photo)** · hide individual items · add extra items with a photo · add or remove whole categories |
 | **Website Content** | Hero trust badges (text + icon) · "how it works" steps · FAQs · testimonials · About page copy · "why choose us" points · lead times · **the SEO description and the AI-assistant text that feeds `llms.txt`** |
-| **Blog & Offers** | Publish/unpublish posts, offers and the customer feedback wall |
-| **Settings** | Announcement banner · phone / WhatsApp / email / Instagram · business hours · delivery areas · menu visibility · home hero heading and sub-heading |
+| **Gallery** | Edit the title/category/description of the 46 original showcase photos · hide any of them · upload brand-new gallery photos · edit, hide or remove the ones you added |
+| **Reviews** | Moderate customer reviews. Only people with a real order ID + matching WhatsApp number can write one; nothing is published until you approve it. Approve, reject, unpublish, edit or delete. |
+| **Feedback** | The chat-screenshot wall. Upload WhatsApp/Instagram screenshots, edit the label/caption, show/hide, or delete. Customers never upload here — you post everything. |
+| **Blog & Offers** | Publish/unpublish posts, offers and announcements |
+| **Settings** | **Brand logo (upload / replace / remove, 1:1)** · announcement banner · phone / WhatsApp / email / Instagram · business hours · delivery areas · menu visibility · home hero heading and sub-heading |
 
 Everything is stored in the Supabase `site_settings` table and merged over the
 code defaults, so **if the database is empty or unreachable the site still
@@ -49,9 +52,35 @@ minute. `llms.txt`, `llms-full.txt` and `sitemap.xml` refresh hourly.
 
 ### Required SQL
 
-The dashboard needs one table. Run **`sql/site-settings-migration.sql`** in the
-Supabase SQL editor (safe to re-run). It stores three keys: `site`, `menu` and
-`content`.
+Run both of these in the Supabase SQL editor (both are safe to re-run):
+
+1. **`sql/site-settings-migration.sql`** — the `site_settings` table, which
+   stores four keys: `site`, `menu`, `content` and `gallery`.
+2. **`sql/gallery-reviews-migration.sql`** — the `reviews` table for verified
+   customer reviews.
+
+### How verified reviews work
+
+Reviews are not open to the public. A customer must enter their order ID
+(`DH-YYYY-XXXXXX`) and the WhatsApp number used on that order; both are checked
+against the `orders` table — the same proof the `/track` page requires. One
+review per order. Submissions land as **pending** and only appear on the site
+(and in the Schema.org review markup) once you approve them in the Reviews tab.
+
+The public form is honeypot- and rate-limit protected, exactly like the order
+form, and names are shortened to "Priya R." for privacy.
+
+## Logo
+
+The default logo is an inline SVG in
+[`src/components/Logo.tsx`](src/components/Logo.tsx) — a 1:1 badge with a "DH"
+monogram over a two-tier cake, committed as source so it needs no upload and
+never 404s.
+
+The owner can replace it in **Settings → Brand logo**. Uploads go to Cloudinary
+and are cropped to a centred square at 512×512, so a slightly-off crop still
+comes out square in the header, footer and as an app icon. Removing the custom
+logo falls straight back to the default mark.
 
 ## Icons
 
