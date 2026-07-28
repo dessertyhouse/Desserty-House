@@ -84,7 +84,7 @@ export default async function Contact() {
             </address>
 
             <div className="section-title-row">
-              <IconClock size={22} className="section-icon" />
+              /** <IconClock size={22} className="section-icon" /> **/
               <h2>Business hours</h2>
             </div>
             <p>{settings.hoursText}</p>
