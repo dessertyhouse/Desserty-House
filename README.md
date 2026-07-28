@@ -52,12 +52,22 @@ minute. `llms.txt`, `llms-full.txt` and `sitemap.xml` refresh hourly.
 
 ### Required SQL
 
-Run both of these in the Supabase SQL editor (both are safe to re-run):
+Run these in the Supabase SQL editor (all are safe to re-run):
 
 1. **`sql/site-settings-migration.sql`** — the `site_settings` table, which
    stores four keys: `site`, `menu`, `content` and `gallery`.
 2. **`sql/gallery-reviews-migration.sql`** — the `reviews` table for verified
    customer reviews.
+3. **`sql/links-migration.sql`** — adds the `links` column used by post and
+   feedback links.
+
+### Links on posts, feedback and gallery items
+
+Every post, feedback screenshot and gallery photo can carry up to five links,
+added in the admin panel and shown as pill buttons on the public page. Paste a
+full address, a bare domain, an internal path like `/order`, or `mailto:` /
+`tel:`. URLs are sanitised on save and again at render: `javascript:`, `data:`
+and `vbscript:` are rejected, so a pasted link can never inject a script.
 
 ### How verified reviews work
 
