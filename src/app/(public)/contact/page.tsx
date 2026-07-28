@@ -89,7 +89,6 @@ export default async function Contact() {
             <p>{settings.hoursText}</p>
 
             <div className="section-title-row">
-              <IconTruck size={22} className="section-icon" />
               <h2>Delivery areas</h2>
             </div>
             <p>{settings.deliveryAreas.join(' · ')} — full details on the <Link href="/shipping-policy">delivery policy</Link> page.</p>
