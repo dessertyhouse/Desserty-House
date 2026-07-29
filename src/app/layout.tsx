@@ -29,6 +29,23 @@ export const metadata: Metadata = {
     canonical: '/',
     types: { 'application/rss+xml': [{ url: '/rss.xml', title: `${site.name} — Blog & Offers` }] },
   },
+  /**
+   * Search-engine ownership verification.
+   *
+   * Set GOOGLE_SITE_VERIFICATION in Vercel to the token Google Search Console
+   * gives you under "HTML tag" — paste ONLY the content value, not the whole
+   * <meta> tag. Next.js renders the tag for you. Leaving it unset renders
+   * nothing, so this is safe to ship empty.
+   *
+   * Prefer DNS verification if you own a custom domain: it verifies the whole
+   * domain at once and survives redeploys and hosting changes.
+   */
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION || undefined,
+    other: process.env.BING_SITE_VERIFICATION
+      ? { 'msvalidate.01': process.env.BING_SITE_VERIFICATION }
+      : undefined,
+  },
   robots: {
     index: true,
     follow: true,
