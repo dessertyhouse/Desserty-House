@@ -97,6 +97,34 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-IN">
+      <head>
+        {/*
+          Discovery links, declared explicitly.
+
+          `metadata.alternates.types` does not emit these reliably (the RSS link
+          it was supposed to produce never appeared in the rendered HTML, and a
+          page that sets its own `alternates` drops inherited types entirely).
+          Declaring them here guarantees they appear on every page.
+
+          - RSS lets feed readers and aggregators subscribe to offers/posts.
+          - llms.txt is the emerging convention for giving AI assistants a clean,
+            plain-text summary of a site. Both files already existed but nothing
+            linked to them, so a crawler had to guess the URL.
+        */}
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title={`${site.name} — Blog & Offers`}
+          href="/rss.xml"
+        />
+        <link rel="alternate" type="text/plain" title={`${site.name} — AI summary`} href="/llms.txt" />
+        <link
+          rel="alternate"
+          type="text/plain"
+          title={`${site.name} — full AI reference`}
+          href="/llms-full.txt"
+        />
+      </head>
       <body>
         <JsonLd data={[organizationSchema(), webSiteSchema(), bakerySchema()]} />
         {children}
