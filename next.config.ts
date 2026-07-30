@@ -22,13 +22,19 @@ const securityHeaders = [
   {
     key: 'Content-Security-Policy',
     value: [
+      // Google AdSense needs to load, render and report from its own domains.
+      // Without these entries the browser silently blocks the ad script and no
+      // ads ever appear — the most common reason AdSense "does nothing".
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline'",
+      // adtrafficquality.google is AdSense's invalid-traffic detection; blocking
+      // it throws CSP errors and can hurt ad serving, so it must be allowed too.
+      "script-src 'self' 'unsafe-inline' https://pagead2.googlesyndication.com https://partner.googleadservices.com https://tpc.googlesyndication.com https://www.googletagservices.com https://adservice.google.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com",
+      "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://www.google.com https://tpc.googlesyndication.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google",
       "font-src 'self' data:",
-      "connect-src 'self' https://*.supabase.co",
-      "frame-src https://www.google.com",
+      "connect-src 'self' https://*.supabase.co https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google",
+      // Ads render inside iframes served from these hosts.
+      "frame-src https://www.google.com https://googleads.g.doubleclick.net https://tpc.googlesyndication.com https://www.googletagservices.com https://ep1.adtrafficquality.google https://ep2.adtrafficquality.google",
       "frame-ancestors 'self'",
       "base-uri 'self'",
       "form-action 'self'",
