@@ -99,6 +99,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en-IN">
       <head>
         {/*
+          Google AdSense — auto ads.
+
+          Must be paired with the CSP allowances in next.config.ts, otherwise the
+          browser blocks this script and no ads ever render.
+
+          Set NEXT_PUBLIC_ADSENSE_CLIENT in Vercel (e.g. ca-pub-1473938803361728).
+          Leaving it unset renders nothing, so previews and local dev stay clean.
+        */}
+        {process.env.NEXT_PUBLIC_ADSENSE_CLIENT ? (
+          <script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_ADSENSE_CLIENT}`}
+            crossOrigin="anonymous"
+          />
+        ) : null}
+
+        {/*
           Discovery links, declared explicitly.
 
           `metadata.alternates.types` does not emit these reliably (the RSS link
